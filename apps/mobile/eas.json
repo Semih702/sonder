@@ -7,6 +7,9 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "env": {
+        "EXPO_USE_COMMUNITY_AUTOLINKING": "1"
+      },
       "android": {
         "buildType": "apk"
       },
@@ -16,16 +19,21 @@
     },
     "preview": {
       "distribution": "internal",
+      "env": {
+        "EXPO_USE_COMMUNITY_AUTOLINKING": "1"
+      },
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_USE_COMMUNITY_AUTOLINKING": "1"
+      }
     }
   },
   "submit": {
     "production": {}
   }
 }
-
