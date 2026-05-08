@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String              @id @default(cuid())
+  displayName       String              @default("User")
+  isBanned          Boolean             @default(false)
+  acceptedTermsAt   DateTime
+  acceptedPrivacyAt DateTime
+  ageConfirmedAt    DateTime
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  devices           Device[]
+  notes             Note[]
+  presence          Presence?
+  reports           Report[]
+  notificationEvents NotificationEvent[]
+  rateLimitEvents   RateLimitEvent[]
+
+  @@index([isBanned])
+}
+
+model InviteCode {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  maxUses   Int
+  usedCount Int       @default(0)
+  expiresAt DateTime?
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Device {
+  id        String   @id @default(cuid())
+  userId    String
+  platform  String
+  provider  String
+  pushToken String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, pushToken])
+  @@index([userId])
+  @@index([isActive])
+}
+
+model Note {
+  id               String              @id @default(cuid())
+  authorUserId     String
+  text             String?
+  linkUrl          String?
+  linkType         String?
+  isAnonymous      Boolean             @default(true)
+  latitudeRounded  Float
+  longitudeRounded Float
+  createdAt        DateTime            @default(now())
+  expiresAt        DateTime
+  hiddenAt         DateTime?
+  deletedAt        DateTime?
+  reportCount      Int                 @default(0)
+  author           User                @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
+  reports          Report[]
+  notificationEvents NotificationEvent[]
+
+  @@index([expiresAt])
+  @@index([createdAt])
+  @@index([hiddenAt, deletedAt])
+  @@index([latitudeRounded, longitudeRounded])
+  @@index([authorUserId])
+}
+
+model Presence {
+  userId                String   @id
+  lastLatitudeRounded   Float
+  lastLongitudeRounded  Float
+  lastSeenAt            DateTime
+  updatedAt             DateTime @updatedAt
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([lastSeenAt])
+  @@index([lastLatitudeRounded, lastLongitudeRounded])
+}
+
+model Report {
+  id             String   @id @default(cuid())
+  noteId         String
+  reporterUserId String
+  reason         String?
+  createdAt      DateTime @default(now())
+  note           Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  reporter       User     @relation(fields: [reporterUserId], references: [id], onDelete: Cascade)
+
+  @@unique([noteId, reporterUserId])
+  @@index([noteId])
+  @@index([reporterUserId])
+}
+
+model NotificationEvent {
+  id              String   @id @default(cuid())
+  recipientUserId String
+  noteId          String
+  type            String
+  createdAt       DateTime @default(now())
+  recipient       User     @relation(fields: [recipientUserId], references: [id], onDelete: Cascade)
+  note            Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@unique([recipientUserId, noteId, type])
+  @@index([recipientUserId, createdAt])
+  @@index([noteId])
+}
+
+model RateLimitEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, action, createdAt])
+}
+

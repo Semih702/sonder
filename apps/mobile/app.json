@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Sonder",
+    "slug": "sonder",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "platforms": ["ios", "android"],
+    "scheme": "sonder",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.sonder.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Sonder uses your location to show temporary notes around you. Your exact location is never shown to other users."
+      }
+    },
+    "android": {
+      "package": "com.sonder.app",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "POST_NOTIFICATIONS"]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Sonder uses your location to show temporary notes around you. Your exact location is never shown to other users."
+        }
+      ],
+      "expo-secure-store",
+      "expo-notifications"
+    ]
+  }
+}

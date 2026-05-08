@@ -1,0 +1,92 @@
+name: API CI/CD
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      run_migrations:
+        description: "Run Prisma migrate deploy before updating Lambda"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy-api:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+      LAMBDA_FUNCTION_NAME: ${{ vars.LAMBDA_FUNCTION_NAME }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      ADMIN_SECRET: ${{ secrets.ADMIN_SECRET }}
+      INVITE_ONLY_MODE: "true"
+      POSTING_ENABLED: "true"
+      PUSH_NOTIFICATIONS_ENABLED: "false"
+      MAINTENANCE_MODE: "false"
+      ADMIN_DASHBOARD_ENABLED: "false"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Generate Prisma client
+        run: pnpm --filter @sonder/api db:generate
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build shared package
+        run: pnpm --filter @sonder/shared build
+
+      - name: Build API
+        run: pnpm --filter @sonder/api build
+
+      - name: Package Lambda with OpenNext
+        run: |
+          pnpm --filter @sonder/api build:lambda
+          mkdir -p lambda-artifact
+          if [ -f apps/api/.open-next/server-function.zip ]; then
+            cp apps/api/.open-next/server-function.zip lambda-artifact/api.zip
+          elif [ -f apps/api/.open-next/server-function/function.zip ]; then
+            cp apps/api/.open-next/server-function/function.zip lambda-artifact/api.zip
+          else
+            echo "OpenNext server function zip was not found."
+            find apps/api/.open-next -maxdepth 3 -type f || true
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
+        if: ${{ env.LAMBDA_FUNCTION_NAME != '' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_OIDC_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Run database migrations
+        if: ${{ env.LAMBDA_FUNCTION_NAME != '' && github.event.inputs.run_migrations == 'true' }}
+        run: pnpm --filter @sonder/api db:deploy
+
+      - name: Update Lambda code
+        if: ${{ env.LAMBDA_FUNCTION_NAME != '' }}
+        run: |
+          aws lambda update-function-code \
+            --function-name "$LAMBDA_FUNCTION_NAME" \
+            --zip-file fileb://lambda-artifact/api.zip
+

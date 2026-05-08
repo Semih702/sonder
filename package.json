@@ -1,0 +1,31 @@
+{
+  "name": "sonder",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "build": "node scripts/run-package-script.mjs build",
+    "dev:api": "node scripts/run-package-script.mjs apps/api dev",
+    "dev:mobile": "node scripts/run-package-script.mjs apps/mobile dev",
+    "db:generate": "node scripts/run-package-script.mjs apps/api db:generate",
+    "db:migrate": "node scripts/run-package-script.mjs apps/api db:migrate",
+    "format": "prettier --write .",
+    "lint": "node scripts/run-package-script.mjs lint",
+    "test": "node scripts/run-package-script.mjs test",
+    "turbo:build": "turbo build",
+    "turbo:lint": "turbo lint",
+    "turbo:test": "turbo test",
+    "turbo:typecheck": "turbo typecheck",
+    "typecheck": "node scripts/run-package-script.mjs typecheck"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@typescript-eslint/parser": "^8.20.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  }
+}

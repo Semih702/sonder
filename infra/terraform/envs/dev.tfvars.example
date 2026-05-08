@@ -1,0 +1,17 @@
+project_name  = "sonder"
+environment   = "dev"
+aws_region    = "us-east-1"
+
+database_url = "postgresql://user:password@host:5432/sonder?sslmode=require"
+jwt_secret   = "replace-with-at-least-32-random-characters"
+admin_secret = "replace-with-a-random-admin-secret"
+
+invite_only_mode             = true
+posting_enabled              = true
+push_notifications_enabled   = false
+maintenance_mode             = false
+admin_dashboard_enabled      = false
+
+enable_apns_channel = false
+enable_fcm_channel  = false
+
