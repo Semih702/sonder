@@ -4,7 +4,10 @@
     "slug": "sonder",
     "version": "0.1.0",
     "orientation": "portrait",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "scheme": "sonder",
     "userInterfaceStyle": "light",
     "ios": {
@@ -16,7 +19,11 @@
     },
     "android": {
       "package": "com.sonder.app",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "POST_NOTIFICATIONS"]
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.POST_NOTIFICATIONS"
+      ]
     },
     "plugins": [
       [
@@ -27,6 +34,11 @@
       ],
       "expo-secure-store",
       "expo-notifications"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "6e510f8e-ad21-492e-b4d4-3b079dbf03e0"
+      }
+    }
   }
 }
